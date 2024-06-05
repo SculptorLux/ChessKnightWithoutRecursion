@@ -6,6 +6,9 @@ public class ChessKnightWithoutRecursion {
     private static final int[] X_MOVES = {2, 1, -1, -2, -2, -1, 1, 2};
     private static final int[] Y_MOVES = {1, 2, 2, 1, -1, -2, -2, -1};
     private int[][] board;
+    private List<int[]> path; // Путь коня
+    private int solutionsCount; // Сколько решений удалось найти (Задал условие, чтобы найти 10 решений далее в коде)
+    private boolean found; // Фдаг для обозначения, что нашлосьб solutionsCount решений
 
     public ChessKnightWithoutRecursion() {
         board = new int[BOARD_SIZE][BOARD_SIZE];
@@ -14,6 +17,9 @@ public class ChessKnightWithoutRecursion {
                 board[i][j] = -100;
             }
         }
+        path = new ArrayList<>();
+        solutionsCount = 0;
+        found = false;
     }
 
     private boolean canMove(int x, int y) {
@@ -26,15 +32,7 @@ public class ChessKnightWithoutRecursion {
             int nextX = x + X_MOVES[i];
             int nextY = y + Y_MOVES[i];
             if (canMove(nextX, nextY)) {
-                int moveCount = 0;
-                for (int j = 0; j < X_MOVES.length; j++) {
-                    int nx = nextX + X_MOVES[j];
-                    int ny = nextY + Y_MOVES[j];
-                    if (canMove(nx, ny)) {
-                        moveCount++;
-                    }
-                }
-                nextMoves.add(new int[]{nextX, nextY, moveCount});
+                nextMoves.add(new int[]{nextX, nextY});
             }
         }
         return nextMoves;
@@ -42,45 +40,45 @@ public class ChessKnightWithoutRecursion {
 
     public void start(int startX, int startY) {
         board[startX][startY] = 0;
-        int move = 1;
-        int x = startX;
-        int y = startY;
+        path.add(new int[]{startX, startY});
+        backtrack(startX, startY, 1);
+    }
 
-        while (move < BOARD_SIZE * BOARD_SIZE) {
-            List<int[]> nextMoves = getNextMoves(x, y);
-
-            int minMoves = Integer.MAX_VALUE;
-            int nextX = -1;
-            int nextY = -1;
-            for (int[] moveInfo : nextMoves) {
-                if (moveInfo[2] < minMoves) {
-                    minMoves = moveInfo[2];
-                    nextX = moveInfo[0];
-                    nextY = moveInfo[1];
-                }
-            }
-
-            if (nextX == -1 && nextY == -1) {
-                System.out.println("Невозможно");
-                return;
-            }
-
-            board[nextX][nextY] = move;
-            x = nextX;
-            y = nextY;
-            move++;
+    private void backtrack(int x, int y, int move) {
+        if (found) {
+            return;
         }
 
-        printBoard();
+        if (move == BOARD_SIZE * BOARD_SIZE) {
+            printBoard();
+            solutionsCount++;
+            if (solutionsCount == 10) {
+                found = true;
+                return;
+            }
+        }
+
+        List<int[]> nextMoves = getNextMoves(x, y);
+        for (int[] nextMove : nextMoves) {
+            int nextX = nextMove[0];
+            int nextY = nextMove[1];
+            board[nextX][nextY] = move;
+            path.add(new int[]{nextX, nextY});
+            backtrack(nextX, nextY, move + 1);
+            board[nextX][nextY] = -100;
+            path.remove(path.size() - 1);
+        }
     }
 
     private void printBoard() {
+        System.out.println("Solutions: " + solutionsCount);
         for (int[] row : board) {
             for (int cell : row) {
                 System.out.printf("%4d ", cell);
             }
             System.out.println();
         }
+        System.out.println();
     }
 
     public static void main(String[] args) {
