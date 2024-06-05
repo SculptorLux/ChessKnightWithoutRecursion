@@ -20,16 +20,24 @@ public class ChessKnightWithoutRecursion {
         return (x >= 0 && x < BOARD_SIZE && y >= 0 && y < BOARD_SIZE && board[x][y] == -100);
     }
 
-    private int getNumberOfMoves(int x, int y) {
-        int numberOfMoves = 0;
+    private List<int[]> getNextMoves(int x, int y) {
+        List<int[]> nextMoves = new ArrayList<>();
         for (int i = 0; i < X_MOVES.length; i++) {
-            int nx = x + X_MOVES[i];
-            int ny = y + Y_MOVES[i];
-            if (canMove(nx, ny)) {
-                numberOfMoves++;
+            int nextX = x + X_MOVES[i];
+            int nextY = y + Y_MOVES[i];
+            if (canMove(nextX, nextY)) {
+                int moveCount = 0;
+                for (int j = 0; j < X_MOVES.length; j++) {
+                    int nx = nextX + X_MOVES[j];
+                    int ny = nextY + Y_MOVES[j];
+                    if (canMove(nx, ny)) {
+                        moveCount++;
+                    }
+                }
+                nextMoves.add(new int[]{nextX, nextY, moveCount});
             }
         }
-        return numberOfMoves;
+        return nextMoves;
     }
 
     public void start(int startX, int startY) {
@@ -39,15 +47,7 @@ public class ChessKnightWithoutRecursion {
         int y = startY;
 
         while (move < BOARD_SIZE * BOARD_SIZE) {
-            //Вместо рекурсии взял цикл
-            List<int[]> nextMoves = new ArrayList<>();
-            for (int i = 0; i < X_MOVES.length; i++) {
-                int nextX = x + X_MOVES[i];
-                int nextY = y + Y_MOVES[i];
-                if (canMove(nextX, nextY)) {
-                    nextMoves.add(new int[]{nextX, nextY, getNumberOfMoves(nextX, nextY)});
-                }
-            }
+            List<int[]> nextMoves = getNextMoves(x, y);
 
             int minMoves = Integer.MAX_VALUE;
             int nextX = -1;
