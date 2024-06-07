@@ -12,11 +12,11 @@ public class KnightWithoutRecursion {
         // В этом классе храню состояние (положение коня сейчас, номер хода и индекс следующего)
         int x, y, turn, moveIndex;
 
-        MoveInfo(int x, int y, int turn, int moveIndex) {
+        MoveInfo(int x, int y, int turn) {
             this.x = x;
             this.y = y;
             this.turn = turn;
-            this.moveIndex = moveIndex;
+            
         }
     }
 
@@ -46,14 +46,22 @@ public class KnightWithoutRecursion {
 
     public void start(int startX, int startY) {
         Stack<MoveInfo> stack = new Stack<>();
-        stack.push(new MoveInfo(startX, startY, 1, 0));
-        board[startX][startY] = 1;
+        stack.push(new MoveInfo(startX, startY, 1));
+        //board[startX][startY] = 1;
         // Создал стек и руками записал в него первый ход
 
         while (!stack.isEmpty() && solutionsFound < toFind) {
             MoveInfo current = stack.pop();
             //Извлекаю текущий ход
 
+            if (current.turn == -1) {
+            	//дальше ходить некуда. возвращаемся.
+            	board[current.x][current.y] = -100;
+            	continue;
+            	
+            }
+            
+            board[current.x][current.y] = current.turn;
             if (current.turn == BOARD_SIZE * BOARD_SIZE) {
                 solutionsFound++;
                 printBoard();
@@ -64,25 +72,18 @@ public class KnightWithoutRecursion {
                 continue;
             }
 
-            boolean hasNextMove = false;
-            for (int i = current.moveIndex; i < X_MOVES.length; i++) {
+            stack.push(new MoveInfo(current.x, current.y, -1)); //запомнили текущую клетку
+            for (int i = 0; i< X_MOVES.length; i++) {
+//            for (int i = X_MOVES.length-1; i>=0; i--) { //Если хотим оставить прежний порядок перебора
                 //Перебр ходов (возможных)
                 int nextX = current.x + X_MOVES[i];
                 int nextY = current.y + Y_MOVES[i];
                 if (canMove(nextX, nextY)) {
-                    stack.push(new MoveInfo(current.x, current.y, current.turn, i + 1));
-                    stack.push(new MoveInfo(nextX, nextY, current.turn + 1, 0));
-                    board[nextX][nextY] = current.turn + 1;
-                    hasNextMove = true;
-                    // Нашел следующий ход и прервал
-                    break;
+                    stack.push(new MoveInfo(nextX, nextY, current.turn + 1));
                 }
             }
 
-            if (!hasNextMove) {
-                // Не нашел ход и вернул текущий совершенный ход на -100
-                board[current.x][current.y] = -100;
-            }
+
         }
 
         if (solutionsFound == 0) {
@@ -91,7 +92,7 @@ public class KnightWithoutRecursion {
     }
 
     public static void main(String[] args) {
-        KnightWithoutRecursion knightWithoutRecursion = new KnightWithoutRecursion(1);
+        KnightWithoutRecursion knightWithoutRecursion = new KnightWithoutRecursion(10);
         knightWithoutRecursion.start(0, 0);
     }
 }
